@@ -5,35 +5,41 @@ function draw(data) {
   var width = 950 - margin;
   var height = 500 - margin;
 
-  function convertKeytoDate(d) {
+  function convertKeyToDate(d) {
     for (var i = 0; i < d.length; i++) {
       d[i].key = new Date(d[i].key);
     }
   };
 
-  var dataMonth = d3.nest()
-    .key(function(d) {
-      return parseTime(d.key.getUTCFullYear() + " " + d.key.getMonth() + " 1");
-    })
-    .rollup(function(v) {
-      return d3.sum(v, function(d) {
-        return d.value;
-      });
-    })
-    .entries(data);
-  convertKeytoDate(dataMonth);
+  function reduceToMonth() {
+    var dataMonth = d3.nest()
+      .key(function(d) {
+        return parseTime(d.key.getUTCFullYear() + " " + d.key.getMonth() + " 1");
+      })
+      .rollup(function(v) {
+        return d3.sum(v, function(d) {
+          return d.value;
+        });
+      })
+      .entries(data);
+    convertKeyToDate(dataMonth);
+    return dataMonth;
+  };
 
-  var dataYear = d3.nest()
-    .key(function(d) {
-      return parseTime(d.key.getUTCFullYear() + " " + "1 1");
-    })
-    .rollup(function(v) {
-      return d3.sum(v, function(d) {
-        return d.value;
-      });
-    })
-    .entries(dataMonth);
-  convertKeytoDate(dataYear)
+  function reduceToYear() {
+    var dataYear = d3.nest()
+      .key(function(d) {
+        return parseTime(d.key.getUTCFullYear() + " " + "1 1");
+      })
+      .rollup(function(v) {
+        return d3.sum(v, function(d) {
+          return d.value;
+        });
+      })
+      .entries(data);
+    convertKeyToDate(dataYear);
+    return dataYear;
+  };
 
   function createXScale(data) {
     return d3.scaleTime()
@@ -81,6 +87,13 @@ function draw(data) {
        .attr("class", "yAxis")
        .attr("transform", "translate(" + margin + ",0)")
        .call(d3.axisLeft(yScale));
+
+    svg.append("text")
+       .attr("class", "title")
+       .attr("x", (width / 2))
+       .attr("y", 0 + (margin / 2))
+       .attr("text-anchor", "middle")
+       .text("Flight Cancellations");
   };
 
   function update(data) {
@@ -132,10 +145,10 @@ function draw(data) {
   };
 
   init(data);
-
-  window.setTimeout(function() {update(dataYear);}, 3000);
-  window.setTimeout(function() {update(dataMonth);}, 6000);
-  window.setTimeout(function() {update(data);}, 9000)
+  window.setTimeout(function() {update(reduceToMonth());}, 3000);
+  window.setTimeout(function() {update(reduceToYear());}, 6000);
+  window.setTimeout(function() {update(reduceToMonth());}, 9000);
+  window.setTimeout(function() {update(data);}, 12000)
 };
 
 d3.csv("data/flight_data.csv", function(data) {
