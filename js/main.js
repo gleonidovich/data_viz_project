@@ -97,6 +97,17 @@ function draw(data) {
     var xAxis = svg.selectAll(".xAxis");
     var yAxis = svg.selectAll(".yAxis");
 
+    circles.enter()
+           .append("circle")
+           .attr("class", "enter")
+           .attr("cx", function(d) {
+              return xScale(d.key);
+           })
+           .attr("cy", function(d) {
+              return yScale(d.value);
+           })
+           .attr("r", 2);
+
     circles.attr("class", "update")
            .transition()
            .duration(1000)
@@ -111,16 +122,6 @@ function draw(data) {
            .attr("r", 0)
            .remove();
 
-    circles.enter()
-           .append("circle")
-           .attr("class", "enter")
-           .attr("cx", function(d) {
-              return xScale(d.key);
-           })
-           .attr("cy", function(d) {
-              return yScale(d.value);
-           });
-
     xAxis.transition()
          .duration(1000)
          .call(d3.axisBottom(xScale));
@@ -132,8 +133,9 @@ function draw(data) {
 
   init(data);
 
-  window.setTimeout(function() {update(dataMonth);}, 3000);
-  window.setTimeout(function() {update(dataYear);}, 6000);
+  window.setTimeout(function() {update(dataYear);}, 3000);
+  window.setTimeout(function() {update(dataMonth);}, 6000);
+  window.setTimeout(function() {update(data);}, 9000)
 };
 
 d3.csv("data/flight_data.csv", function(data) {
