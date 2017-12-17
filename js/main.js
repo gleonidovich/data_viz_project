@@ -11,10 +11,14 @@ function draw(data) {
     }
   };
 
-  function reduceToMonth() {
-    var dataMonth = d3.nest()
+  function reduceData(unit) {
+    var nested = d3.nest()
       .key(function(d) {
-        return parseTime(d.key.getUTCFullYear() + " " + d.key.getMonth() + " 1");
+        if (unit === "month") {
+          return parseTime(d.key.getUTCFullYear() + " " + d.key.getMonth() + " 1");
+        } else if (unit === "year") {
+          return parseTime(d.key.getUTCFullYear() + " 1 1");
+        }        
       })
       .rollup(function(v) {
         return d3.sum(v, function(d) {
@@ -22,23 +26,8 @@ function draw(data) {
         });
       })
       .entries(data);
-    convertKeyToDate(dataMonth);
-    return dataMonth;
-  };
-
-  function reduceToYear() {
-    var dataYear = d3.nest()
-      .key(function(d) {
-        return parseTime(d.key.getUTCFullYear() + " " + "1 1");
-      })
-      .rollup(function(v) {
-        return d3.sum(v, function(d) {
-          return d.value;
-        });
-      })
-      .entries(data);
-    convertKeyToDate(dataYear);
-    return dataYear;
+    convertKeyToDate(nested);
+    return nested;
   };
 
   function createXScale(data) {
@@ -132,7 +121,7 @@ function draw(data) {
            .attr("class", "exit")
            .transition()
            .duration(1000)
-           .attr("r", 0)
+           .style("opacity", "0")
            .remove();
 
     xAxis.transition()
@@ -145,9 +134,9 @@ function draw(data) {
   };
 
   init(data);
-  window.setTimeout(function() {update(reduceToMonth());}, 3000);
-  window.setTimeout(function() {update(reduceToYear());}, 6000);
-  window.setTimeout(function() {update(reduceToMonth());}, 9000);
+  window.setTimeout(function() {update(reduceData("month"));}, 3000);
+  window.setTimeout(function() {update(reduceData("year"));}, 6000);
+  window.setTimeout(function() {update(reduceData("month"));}, 9000);
   window.setTimeout(function() {update(data);}, 12000)
 };
 
