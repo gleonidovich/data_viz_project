@@ -88,7 +88,10 @@ function start() {
     }
 
     selections.on("change", function(d) {
-      update(reduceData(filterYear(data, +d3.select(this).property("value")), "day"));
+      var year = +d3.select(this).property("value");
+      update(reduceData(filterYear(data, year), "day"));
+      svg.select(".title")
+         .text("Flight Cancellations Per Day in " + year);
     });
 
     // convert date string into a Date object

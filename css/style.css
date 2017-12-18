@@ -21,9 +21,18 @@ body {
   -webkit-transition-duration: 0.3s;
 }
 
-input:hover {
+.buttons input:hover {
   background-color: black;
   color: white;
+}
+
+.dropdown {
+  margin-top: 5px;
+}
+
+.selections {
+  border: none;
+  padding: 4px 9px;
 }
 
 circle {
