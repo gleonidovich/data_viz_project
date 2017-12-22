@@ -33,6 +33,7 @@ body {
 .selections {
   border: none;
   padding: 4px 9px;
+  margin-right: 5px;
 }
 
 circle {
@@ -43,4 +44,10 @@ circle {
 .title {
   font-size: 20px;
   font-weight: bold;
+}
+
+.checkboxes p {
+  display: inline-block;
+  margin: 0;
+  font-size: 14px;
 }

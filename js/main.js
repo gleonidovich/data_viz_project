@@ -2,6 +2,7 @@
 function start() {
   // create a parser for Date objects
   var parseTime = d3.timeParse("%Y %m %d");
+  var asPercent = false;
 
   // main visualization logic
   function draw(data) {
@@ -24,6 +25,26 @@ function start() {
        .attr("class", "optionsTitle")
        .text("Options");
 
+    var chkbx = div.append("div")
+                   .attr("class", "checkboxes")
+
+    chkbx.append("p")
+         .text("Display as a rate:")
+
+    chkbx.append("input")
+         .attr("type", "checkbox")
+         .attr("id", "asPercent")
+         .on("change", function(d) {
+           if (d3.select("#asPercent").property("checked")) {
+             asPercent = true;
+           } else {
+             asPercent = false;
+           }
+           update(reduceData(data, "day", asPercent));
+           svg.select(".title")
+                 .text("Flight Cancellations Per Day")
+         });
+
     // add buttons for all data
     var btns = div.append("div")
                   .attr("class", "buttons")
@@ -33,7 +54,7 @@ function start() {
            .attr("name", "day")
            .attr("value", "Per Day")
            .on("click", function(d) {
-              update(reduceData(data, "day"));
+              update(reduceData(data, "day", asPercent));
               svg.select(".title")
                  .text("Flight Cancellations Per Day");
            });
@@ -43,7 +64,7 @@ function start() {
            .attr("name", "month")
            .attr("value", "Per Month")
            .on("click", function(d) {
-              update(reduceData(data, "month"));
+              update(reduceData(data, "month", asPercent));
               svg.select(".title")
                  .text("Flight Cancellations Per Month");
            });
@@ -53,7 +74,7 @@ function start() {
            .attr("name", "year")
            .attr("value", "Per Year")
            .on("click", function(d) {
-              update(reduceData(data, "year"));
+              update(reduceData(data, "year", asPercent));
               svg.select(".title")
                  .text("Flight Cancellations Per Year");
            });
@@ -66,7 +87,6 @@ function start() {
           newSet.push(row);
         } 
       });
-      console.log(newSet);
       return newSet;
     };
 
@@ -89,9 +109,46 @@ function start() {
 
     selections.on("change", function(d) {
       var year = +d3.select(this).property("value");
-      update(reduceData(filterYear(data, year), "day"));
+      update(reduceData(filterYear(data, year), "day", asPercent));
       svg.select(".title")
          .text("Flight Cancellations Per Day in " + year);
+    });
+
+    function filterDest(dataset, dest) {
+      var newSet = [];
+      dataset.forEach(function(row) {
+        if (row.dest === dest) {
+          newSet.push(row);
+        }
+      });
+      return newSet;
+    };
+
+    var selections = dropdown.append("select")
+                             .attr("class", "selections");
+
+    selections.append("option")
+              .attr("value", "Destination")
+              .text("Destination")
+
+    var destinations = ["ATL","ORD","LAX","DFW","DEN",
+                        "JFK","LAS","IAH","PHX","CLT",
+                        "SFO","EWR","MCO","DTW","MIA",
+                        "MSP","SEA","PHL","BOS","LGA",
+                        "IAD","FLL","BWI","SLC","HNL",
+                        "SAN","TPA","DCA","MDW","PDX"];
+
+    for (var i = 0; i < 30; i ++) {
+      selections.append("option")
+                .attr("value", destinations[i])
+                .text(destinations[i]);
+    }
+
+    selections.on("change", function(d) {
+      var dest = d3.select(this).property("value");
+      update(reduceData(filterDest(data, dest), "day", asPercent));
+      svg.select(".title")
+         .text("Flight Cancellations Per Day for " + dest);
     });
 
     // convert date string into a Date object
@@ -103,7 +160,7 @@ function start() {
 
     // create a nested dataset
     // the unit param should be "month" or "year"
-    function reduceData(dataset, unit) {
+    function reduceData(dataset, unit, percent = false) {
       var nested = d3.nest()
         .key(function(d) {
           if (unit === "day") {
@@ -115,9 +172,19 @@ function start() {
           }        
         })
         .rollup(function(v) {
-          return d3.sum(v, function(d) {
-            return d.cancelled;
-          });
+          if (percent) {
+            var sumCancelled = d3.sum(v, function(d) {
+              return d.cancelled;
+            });
+            var sumAllFlights = d3.sum(v, function(d) {
+              return d.allFlights;
+            });
+            return sumCancelled/sumAllFlights;
+          } else {
+            return d3.sum(v, function(d) {
+              return d.cancelled;
+            });
+          }
         })
         .entries(dataset);
       convertKeyToDate(nested);
@@ -125,7 +192,7 @@ function start() {
     };
 
     function createXScale(data) {
-      return d3.scaleUtc()
+      return d3.scaleTime()
                .domain(d3.extent(data, function(d) {
                  return new Date(d.key);
                }))
@@ -228,14 +295,14 @@ function start() {
     init(reduceData(data, "day"));
   };
 
-  d3.csv("data/flight_data.csv", function(data) {
+  d3.csv("data/top30airports.csv", function(data) {
     data.forEach(function(d) {
-      d.year = +d.Year;
-      d.month = +d.Month;
-      d.day = +d.DayofMonth;
-      d.carrier = d.UniqueCarrier;
-      d.cancelled = +d.Cancelled;
-      d.allFlights = +d.AllFlights;
+      d.year = +d.year;
+      d.month = +d.month;
+      d.day = +d.day;
+      d.dest = d.dest;
+      d.cancelled = +d.cancelled;
+      d.allFlights = +d.allFlights;
     });
     draw(data);
   });
