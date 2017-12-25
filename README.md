@@ -15,3 +15,6 @@ There dataset had to be modified to try to look at the departure and destination
 ## Resources
 Data: [ASA Data Expo 2009](http://stat-computing.org/dataexpo/2009/the-data.html)
 Data: [Top 30 Hubs](https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States)
+Help: [Speeding Up d3.js: A Checklist](https://www.safaribooksonline.com/blog/2014/02/20/speeding-d3-js-checklist/)
+Help: [Simple Line Chart](https://bl.ocks.org/mbostock/3883245)
+Help: [Animate path in D3](http://bl.ocks.org/duopixel/4063326)
