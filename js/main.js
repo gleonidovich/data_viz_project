@@ -3,6 +3,7 @@ function start() {
   // create a parser for Date objects
   var parseTime = d3.timeParse("%Y %m %d");
   var asPercent = false;
+  var currentState = "";
 
   // main visualization logic
   function draw(data) {
