@@ -1,11 +1,36 @@
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Flight Cancellations</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
   <script src="https://d3js.org/d3.v4.js"></script>
 </head>
 <body>
+<svg width="960" height="600"></svg>
+<div id="focus" class="hidden">
+  <p id="yearLine">Year: <span id="yearVal"></span></p>
+  <p id="monthLine">Month: <span id="monthVal"></span></p>
+  <p id="cancelLine">Cancellations: <span id="cancelVal"></span></p>
+<!--   <p id="flightsLine">Number of Flights: <span id="flightsVal"></span></p>
+  <p id="rateLine">Rate: <span id="rateVal"></span></p>
+ --></div>
+<div class="options">
+  <h3 class="optionsTitle">Options</h3>
+  <div class="checkboxes">
+    <p>Display as a rate:</p>
+    <input type="checkbox" id="asPercent">
+  </div>
+  <div class="buttons">
+    <input type="button" name="Month" value="Per Month" id="monthBtn">
+    <input type="button" name="Year" value="Per Year" id="yearBtn">
+  </div>
+  <div class="dropdown">
+    <select name="Years" class="selections" id="yearSelect"></select>
+    <select name="Airports" class="selections" id="airportSelect"></select>
+  </div>
+</div>
 
 <script type="text/javascript" src="js/main.js"></script>
 
