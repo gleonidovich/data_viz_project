@@ -4,6 +4,11 @@ var margin = 50,
     width = 960 - margin,
     height = 600 - margin;
 
+var monthList = [
+  "Jan ", "Feb ", "Mar ", "Apr ", "May ", "Jun ",
+  "Jul ", "Aug ", "Sep ", "Oct ", "Nov ", "Dec "
+]
+
 // date parser and bisector
 var parseTime = d3.timeParse("%Y %m %d");
 var bisectDate = d3.bisector(function(d) { return d.key; }).right;
@@ -11,7 +16,6 @@ var bisectDate = d3.bisector(function(d) { return d.key; }).right;
 // state object
 var currentState = {
   dateConstraint: "Month",
-  asPercent: false,
   chosenYear: -1,
   chosenAirport: "Airport"
 };
@@ -53,7 +57,7 @@ function convertKeyToDate(d) {
 
 // create a nested dataset
 // the unit param should be "month" or "year"
-function reduceData(dataset, unit, percent = false) {
+function reduceData(dataset, unit) {
   var nested = d3.nest()
     .key(function(d) {
       if (unit === "Month") {
@@ -63,18 +67,18 @@ function reduceData(dataset, unit, percent = false) {
       }        
     })
     .rollup(function(v) {
-      if (percent) {
-        var sumCancelled = d3.sum(v, function(d) {
+      var sumCancelled = d3.sum(v, function(d) {
           return d.cancelled;
-        });
-        var sumAllFlights = d3.sum(v, function(d) {
+        }),
+          sumAllFlights = d3.sum(v, function(d) {
           return d.allFlights;
-        });
-        return sumCancelled/sumAllFlights;
-      } else {
-        return d3.sum(v, function(d) {
-          return d.cancelled;
-        });
+        }),
+          percentage = sumCancelled / sumAllFlights;
+
+      return {
+        sumCancelled: sumCancelled,
+        sumAllFlights: sumAllFlights,
+        percentage: percentage
       }
     })
     .entries(dataset);
@@ -93,7 +97,7 @@ function createXScale(data) {
 function createYScale(data) {
   return d3.scaleLinear()
            .domain([0, d3.max(data, function(d) {
-             return d.value;
+             return d.value.sumCancelled;
            })])
            .range([height, margin]);
 }
@@ -112,24 +116,11 @@ function draw(error, airports, flights) {
   // create the svg window
   var svg = d3.select("svg")
 
-  // create buttons window
-  d3.select("#asPercent")
-    .on("change", function(d) {
-      if (d3.select("#asPercent").property("checked")) {
-        currentState.asPercent = true;
-      } else {
-        currentState.asPercent = false;
-      }
-      update(reduceData(flights, currentState.dateConstraint, currentState.asPercent));
-      svg.select(".title")
-        .text("Flight Cancellations Per Day");
-    });
-
   // add buttons for all flights
   d3.select("#monthBtn")
     .on("click", function(d) {
       currentState.dateConstraint = "Month";
-      update(reduceData(flights, currentState.dateConstraint, currentState.asPercent));
+      update(reduceData(flights, currentState.dateConstraint));
       svg.select(".title")
         .text("Flight Cancellations Per Month");
     });
@@ -137,7 +128,7 @@ function draw(error, airports, flights) {
   d3.select("#yearBtn")
     .on("click", function(d) {
       currentState.dateConstraint = "Year";
-      update(reduceData(flights, currentState.dateConstraint, currentState.asPercent));
+      update(reduceData(flights, currentState.dateConstraint));
       svg.select(".title")
         .text("Flight Cancellations Per Year");
     });
@@ -156,8 +147,9 @@ function draw(error, airports, flights) {
   }
 
   yearSelect.on("change", function(d) {
+    currentState.dateConstraint = "Month";
     currentState.chosenYear = +d3.select(this).property("value");
-    update(reduceData(filterYear(flights, currentState.chosenYear), "Month", currentState.asPercent));
+    update(reduceData(filterYear(flights, currentState.chosenYear), "Month"));
     svg.select(".title")
       .text("Flight Cancellations Per Month in " + currentState.chosenYear);
   });
@@ -201,7 +193,7 @@ function draw(error, airports, flights) {
           return xScale(d.key);
         })
        .attr("cy", function(d) {
-          return yScale(d.value);
+          return yScale(d.value.sumCancelled);
        })
        .attr("r", 2);
 
@@ -210,7 +202,7 @@ function draw(error, airports, flights) {
                     return xScale(d.key);
                   })
                  .y(function(d) {
-                    return yScale(d.value);
+                    return yScale(d.value.sumCancelled);
                  })
                  .curve(d3.curveMonotoneX);
 
@@ -250,11 +242,6 @@ function draw(error, airports, flights) {
        .attr("text-anchor", "middle")
        .text("Flight Cancellations per Month");
 
-    svg.append("rect")
-       .attr("class", "info")
-       .attr("x", (width * 4 / 3))
-       .attr("y", 0 + margin);
-
     var focus = d3.select("#focus")
 
     var outline = svg.append("g")
@@ -284,14 +271,22 @@ function draw(error, airports, flights) {
           d0 = data[i - 1],
           d1 = data[i],
           d = x0 - d0.key > d1.key - x0 ? d1 : d0;
-      outline.attr("transform", "translate(" + xScale(d.key) + "," + yScale(d.value) + ")");
-      // focus.select("text").text(d.value);
+      outline.attr("transform", "translate(" + xScale(d.key) + "," + yScale(d.value.sumCancelled) + ")");
       focus.select("#yearVal")
         .text(d.key.getFullYear());
-      focus.select("#monthVal")
-        .text(d.key.getMonth() + 1);
+      if (currentState.dateConstraint == "Month") {
+        focus.select("#monthVal")
+          .text(monthList[d.key.getMonth()]);
+      } else {
+        focus.select("#monthVal")
+          .style("display", "hidden");
+      }
       focus.select("#cancelVal")
-        .text(d.value);
+        .text(d.value.sumCancelled);
+      focus.select("#flightsVal")
+        .text(d.value.sumAllFlights);
+      focus.select("#rateVal")
+        .text((d.value.percentage * 100).toFixed(2));
     }
   };
 
@@ -315,7 +310,7 @@ function draw(error, airports, flights) {
               return xScale(d.key);
            })
            .attr("cy", function(d) {
-              return yScale(d.value);
+              return yScale(d.value.sumCancelled);
            })
            .attr("r", 2);
 
@@ -326,7 +321,7 @@ function draw(error, airports, flights) {
               return xScale(d.key);
            })
            .attr("cy", function(d) {
-              return yScale(d.value);
+              return yScale(d.value.sumCancelled);
            });
 
     circles.exit()
@@ -341,7 +336,7 @@ function draw(error, airports, flights) {
                     return xScale(d.key);
                   })
                  .y(function(d) {
-                    return yScale(d.value);
+                    return yScale(d.value.sumCancelled);
                  });
 
     var path = svg.select("path")
@@ -395,14 +390,23 @@ function draw(error, airports, flights) {
           d0 = data[i - 1],
           d1 = data[i],
           d = x0 - d0.key > d1.key - x0 ? d1 : d0;
-      outline.attr("transform", "translate(" + xScale(d.key) + "," + yScale(d.value) + ")");
-      // focus.select("text").text(d.value);
+      outline.attr("transform", "translate(" + xScale(d.key) + "," + yScale(d.value.sumCancelled) + ")");
       focus.select("#yearVal")
         .text(d.key.getFullYear());
-      focus.select("#monthVal")
-        .text(d.key.getMonth() + 1);
+      if (currentState.dateConstraint == "Month") {
+        focus.select("#monthVal")
+          .style("display", "")
+          .text(monthList[d.key.getMonth()]);
+      } else {
+        focus.select("#monthVal")
+          .style("display", "none");
+      }
       focus.select("#cancelVal")
-        .text(d.value);
+        .text(d.value.sumCancelled);
+      focus.select("#flightsVal")
+        .text(d.value.sumAllFlights);
+      focus.select("#rateVal")
+        .text((d.value.percentage * 100).toFixed(2));
     }
   };
 

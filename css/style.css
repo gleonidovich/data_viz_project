@@ -55,8 +55,7 @@ body {
 }
 
 .outline circle {
-  fill: none;
-  stroke: steelblue;
+  fill: black;
 }
 
 .hidden {
@@ -64,8 +63,19 @@ body {
 }
 
 #focus {
-  border: solid 2px red;
+  background: #dddaff;
+  border-radius: 10%;
+  font-size: 0.8em;
+  padding: 5px;
   position: absolute;
   transform: translate(600px);
-  width: 200px;
+}
+
+h4 {
+  margin-top: 0;
+  text-align: center;
+}
+
+#focus > p {
+  margin: 5% auto;
 }

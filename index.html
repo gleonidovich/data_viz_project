@@ -10,18 +10,13 @@
 <body>
 <svg width="960" height="600"></svg>
 <div id="focus" class="hidden">
-  <p id="yearLine">Year: <span id="yearVal"></span></p>
-  <p id="monthLine">Month: <span id="monthVal"></span></p>
-  <p id="cancelLine">Cancellations: <span id="cancelVal"></span></p>
-<!--   <p id="flightsLine">Number of Flights: <span id="flightsVal"></span></p>
-  <p id="rateLine">Rate: <span id="rateVal"></span></p>
- --></div>
+  <h4><span id="monthVal"></span><span id="yearVal"></span></h4>
+  <p>Cancellations: <span id="cancelVal"></span></p>
+  <p>Number of Flights: <span id="flightsVal"></span></p>
+  <p>Percentage: <span id="rateVal"></span>%</p>
+</div>
 <div class="options">
   <h3 class="optionsTitle">Options</h3>
-  <div class="checkboxes">
-    <p>Display as a rate:</p>
-    <input type="checkbox" id="asPercent">
-  </div>
   <div class="buttons">
     <input type="button" name="Month" value="Per Month" id="monthBtn">
     <input type="button" name="Year" value="Per Year" id="yearBtn">
