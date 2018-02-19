@@ -2,7 +2,7 @@
 
 var margin = 50,
     width = 960 - margin,
-    height = 600 - margin;
+    height = 550 - margin;
 
 var monthList = [
   "Jan ", "Feb ", "Mar ", "Apr ", "May ", "Jun ",
@@ -208,16 +208,15 @@ function draw(error, airports, flights) {
 
     var path = svg.append("path")
        .attr("d", line(data))
-       .attr("fill", "none")
-       .attr("stroke", "steelblue");
+       .attr("fill", "none");
 
     var pathLength = path.node().getTotalLength();
 
     path.attr("stroke-dasharray", pathLength + " " + pathLength)
         .attr("stroke-dashoffset", pathLength)
-       .transition()
-       .duration(1000)
-       .attr("stroke-dashoffset", 0);
+        .transition()
+        .duration(1000)
+        .attr("stroke-dashoffset", 0);
 
     svg.append("g")
        .attr("class", "xAxis")
@@ -341,17 +340,16 @@ function draw(error, airports, flights) {
 
     var path = svg.select("path")
                   .attr("d", line(data))
-                  .attr("fill", "none")
-                  .attr("stroke", "steelblue");
+                  .attr("fill", "none");
 
     var pathLength = path.node().getTotalLength();
 
     path.attr("stroke-dasharray", pathLength + " " + pathLength)
         .attr("stroke-dashoffset", pathLength)
-       .transition()
-       .delay(800)
-       .duration(800)
-       .attr("stroke-dashoffset", 0);
+        .transition()
+        .delay(800)
+        .duration(800)
+        .attr("stroke-dashoffset", 0);
 
     xAxis.transition()
          .duration(800)

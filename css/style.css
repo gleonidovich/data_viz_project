@@ -2,9 +2,9 @@ body {
   font-family: 'Roboto';
 }
 
-/*circle {
-  fill: steelblue;
-}*/
+path {
+  stroke: black;
+}
 
 .buttons input {
   border: none;
