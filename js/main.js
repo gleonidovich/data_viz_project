@@ -250,6 +250,8 @@ function draw(error, airports, flights) {
     outline.append("circle")
         .attr("r", 4.5);
 
+    // tooltip function
+    // created by Mike Bostock
     svg.append("rect")
         .attr("class", "overlay")
         .attr("width", width)
